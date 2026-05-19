@@ -1,0 +1,1692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sako Analytics — Cricket video + ball-by-ball data + match reports</title>
+<meta name="description" content="Every ball tagged with full ball-by-ball data — over, batter, bowler, runs, extras, wicket type, fielder, bowler type. Plus match reports, opponent analysis, and tournament breakdowns as PDF or PPT. All in one private video library.">
+<meta property="og:title" content="Sako Analytics — Cricket video + ball-by-ball data">
+<meta property="og:description" content="Every ball tagged. Match reports, opponent scouting, tournament analytics. One private link per player.">
+<meta property="og:image" content="images/logo.png">
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", sans-serif;
+    background: #0a0a0a;
+    color: #fafafa;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; transition: color 0.2s; }
+  button { font-family: inherit; cursor: pointer; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #121212;
+    --surface-2: #1a0606;
+    --border: rgba(220, 38, 38, 0.18);
+    --border-strong: rgba(220, 38, 38, 0.4);
+    --red: #DC2626;
+    --red-bright: #EF4444;
+    --red-dark: #991B1B;
+    --burgundy: #7F1D1D;
+    --gold: #D4AF37;
+    --text: #fafafa;
+    --text-muted: #9a9a9a;
+    --text-dim: #666;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* ================ TYPOGRAPHY ================ */
+  h1, h2, h3 { letter-spacing: -0.025em; line-height: 1.1; }
+  .display { font-size: clamp(40px, 7vw, 88px); font-weight: 800; letter-spacing: -0.04em; }
+  .headline { font-size: clamp(28px, 4.5vw, 48px); font-weight: 800; letter-spacing: -0.025em; }
+  .eyebrow {
+    color: var(--red);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 16px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ""; width: 24px; height: 1px; background: var(--red);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--red-bright) 0%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .text-muted { color: var(--text-muted); }
+
+  /* ================ BUTTONS ================ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    border-radius: 999px;
+    font-size: 15px; font-weight: 600;
+    border: none;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    color: white;
+    box-shadow: 0 8px 24px -4px rgba(220, 38, 38, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -4px rgba(220, 38, 38, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  /* ================ NAV ================ */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 10px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo {
+    display: inline-flex; align-items: center;
+    background: #ffffff;
+    padding: 2px;
+    border-radius: 12px;
+    line-height: 0;
+    overflow: hidden;
+    box-shadow: 0 6px 20px -6px rgba(220, 38, 38, 0.45),
+                0 0 0 1px rgba(220, 38, 38, 0.18);
+  }
+  .logo img {
+    height: 120px;
+    width: auto;
+    display: block;
+  }
+  @media (max-width: 580px) {
+    .logo { padding: 2px; border-radius: 10px; }
+    .logo img { height: 80px; }
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 32px;
+    font-size: 14px;
+  }
+  .nav-links a:not(.btn) { color: var(--text-muted); font-weight: 500; }
+  .nav-links a:not(.btn):hover { color: var(--text); }
+  .nav-links .btn { padding: 10px 20px; font-size: 13px; }
+  @media (max-width: 768px) {
+    .nav-links a:not(.btn) { display: none; }
+  }
+
+  /* ================ HERO ================ */
+  .hero {
+    position: relative;
+    padding: 80px 24px 100px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(220, 38, 38, 0.18), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(127, 29, 29, 0.15), transparent 70%),
+      var(--bg);
+  }
+  .hero-bg::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(220, 38, 38, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220, 38, 38, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+  }
+  .hero-grid {
+    position: relative; z-index: 1;
+    max-width: 920px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 7vw, 84px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin-bottom: 28px;
+  }
+  .hero p {
+    font-size: clamp(16px, 1.4vw, 19px);
+    color: var(--text-muted);
+    margin: 0 auto 40px;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+  .hero-buttons { justify-content: center; }
+  .hero-trust { justify-content: center; }
+  .hero-badge { margin-left: auto; margin-right: auto; }
+  .hero-buttons {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .hero-trust {
+    display: flex; align-items: center; gap: 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .hero-trust .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #10b981; box-shadow: 0 0 12px #10b981;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(220, 38, 38, 0.12);
+    border: 1px solid var(--border-strong);
+    color: #ff8888;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+  .hero-badge .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--red-bright);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8); }
+    70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  }
+  @media (max-width: 880px) {
+    .hero { padding: 56px 24px 80px; }
+  }
+
+  /* ================ STATS ================ */
+  .stats {
+    padding: 80px 24px;
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(127, 29, 29, 0.08) 50%, transparent 100%),
+      var(--bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .stat {
+    position: relative;
+    text-align: left;
+    padding: 24px 0;
+  }
+  .stat-num {
+    font-size: clamp(40px, 5vw, 56px);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--red-bright) 0%, var(--red) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  }
+
+  /* ================ SECTIONS ================ */
+  section.block { padding: 120px 24px; position: relative; }
+  .section-header { max-width: 720px; margin: 0 auto 72px; text-align: center; }
+  .section-header h2 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .section-header p {
+    color: var(--text-muted);
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  /* ================ COMPARISON ================ */
+  .comparison {
+    background: linear-gradient(180deg, var(--bg) 0%, #0d0505 100%);
+  }
+  .compare-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .compare-card {
+    padding: 36px 32px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .compare-card.them h3 { color: var(--text-muted); }
+  .compare-card.us {
+    background:
+      linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, transparent 100%),
+      var(--surface-2);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 24px 48px -12px rgba(220, 38, 38, 0.2);
+    position: relative;
+  }
+  .compare-card.us::before {
+    content: "";
+    position: absolute; inset: -1px;
+    border-radius: 20px;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--red) 0%, transparent 50%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .compare-card h3 {
+    font-size: 24px; font-weight: 800;
+    margin-bottom: 24px;
+  }
+  .compare-card.us h3 { color: var(--red-bright); }
+  .compare-list { list-style: none; }
+  .compare-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 15px;
+  }
+  .compare-list li:last-child { border-bottom: none; }
+  .compare-card.them li::before {
+    content: "✕"; color: var(--text-dim);
+    font-weight: 700; flex-shrink: 0; width: 18px;
+  }
+  .compare-card.us li::before {
+    content: "✓"; color: var(--red-bright);
+    font-weight: 700; flex-shrink: 0; width: 18px;
+  }
+  @media (max-width: 768px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ================ FEATURES ================ */
+  .features-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    padding: 36px 28px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .feature::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .feature:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    box-shadow: 0 24px 48px -16px rgba(220, 38, 38, 0.2);
+  }
+  .feature:hover::before { opacity: 1; }
+  .feature-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--red) 0%, var(--burgundy) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 16px -4px rgba(220, 38, 38, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .feature h3 {
+    font-size: 19px; font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .feature p { color: var(--text-muted); font-size: 14.5px; line-height: 1.6; }
+  @media (max-width: 880px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 580px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ================ REPORTS ================ */
+  .reports {
+    background: linear-gradient(180deg, #0d0505 0%, var(--bg) 100%);
+  }
+  .reports-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+  }
+  .report-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    box-shadow: 0 24px 48px -16px rgba(220, 38, 38, 0.2);
+  }
+  .report-thumb {
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #1f0a0a 0%, #0d0303 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .report-thumb svg { width: 100%; height: 100%; display: block; }
+  .report-body { padding: 22px 24px 26px; }
+  .report-format {
+    font-size: 10px; font-weight: 700;
+    color: var(--red-bright);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .report-card h3 {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .report-card p { color: var(--text-muted); font-size: 14px; line-height: 1.55; }
+  @media (max-width: 880px) {
+    .reports-grid { grid-template-columns: 1fr; max-width: 480px; }
+  }
+
+  /* ================ SHOWCASE ================ */
+  .showcase {
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(127, 29, 29, 0.06) 100%),
+      var(--bg);
+  }
+  .showcase-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .showcase-image-wrap {
+    position: relative;
+    aspect-ratio: 5/6;
+  }
+  .showcase-image-wrap::before {
+    content: "";
+    position: absolute; inset: -32px -16px -16px -32px;
+    background: radial-gradient(ellipse at top left, var(--red) 0%, transparent 60%);
+    opacity: 0.25;
+    filter: blur(48px);
+    z-index: -1;
+  }
+  .showcase-image-wrap img,
+  .showcase-image-wrap > svg {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 24px;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
+    display: block;
+  }
+  .showcase-list {
+    list-style: none; margin-top: 32px;
+  }
+  .showcase-list li {
+    padding: 16px 0;
+    display: flex; align-items: flex-start; gap: 14px;
+    font-size: 15.5px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .showcase-list li::before {
+    content: "→";
+    color: var(--red-bright);
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 880px) {
+    .showcase-grid { grid-template-columns: 1fr; gap: 56px; }
+    .showcase-image-wrap { max-width: 340px; margin: 0 auto; }
+  }
+
+  /* ================ HOW IT WORKS ================ */
+  .howto-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px; counter-reset: step;
+  }
+  .step {
+    padding: 36px 28px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .step::before {
+    counter-increment: step;
+    content: "0" counter(step);
+    position: absolute;
+    top: 24px; right: 28px;
+    font-size: 56px;
+    font-weight: 800;
+    color: rgba(220, 38, 38, 0.12);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .step h3 {
+    font-size: 20px; font-weight: 700;
+    margin-bottom: 12px; margin-top: 8px;
+    letter-spacing: -0.01em;
+  }
+  .step p { color: var(--text-muted); font-size: 14.5px; line-height: 1.6; }
+  @media (max-width: 768px) { .howto-grid { grid-template-columns: 1fr; } }
+
+  /* ================ PRICING ================ */
+  .pricing {
+    background: linear-gradient(180deg, #0d0505 0%, var(--bg) 100%);
+  }
+  .pricing-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 40px 32px;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .price-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-strong);
+  }
+  .price-card.featured {
+    background:
+      linear-gradient(180deg, rgba(220, 38, 38, 0.1) 0%, transparent 60%),
+      var(--surface-2);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 32px 64px -12px rgba(220, 38, 38, 0.25);
+    transform: scale(1.04);
+  }
+  .price-card.featured:hover { transform: scale(1.04) translateY(-4px); }
+  .price-tag {
+    position: absolute; top: -14px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--red) 0%, var(--burgundy) 100%);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 8px 16px -4px rgba(220, 38, 38, 0.5);
+  }
+  .price-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .price-amount {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .price-amount .currency {
+    font-size: 24px;
+    vertical-align: top;
+    margin-right: 4px;
+    color: var(--text-muted);
+  }
+  .price-usd {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .price-usd strong { color: var(--text); font-weight: 700; }
+  .price-period {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+  .price-features {
+    list-style: none; margin-bottom: 32px; flex: 1;
+  }
+  .price-features li {
+    padding: 9px 0;
+    font-size: 14.5px;
+    color: var(--text);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .price-features li::before {
+    content: "✓";
+    color: var(--red-bright);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .price-cta {
+    display: block; text-align: center;
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-size: 14px; font-weight: 600;
+    border: 1px solid var(--border-strong);
+    background: rgba(220, 38, 38, 0.08);
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  .price-cta:hover { background: rgba(220, 38, 38, 0.18); }
+  .price-card.featured .price-cta {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 8px 20px -4px rgba(220, 38, 38, 0.5);
+  }
+  .price-card.featured .price-cta:hover {
+    box-shadow: 0 12px 28px -4px rgba(220, 38, 38, 0.7);
+  }
+  @media (max-width: 880px) {
+    .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
+    .price-card.featured { transform: none; }
+    .price-card.featured:hover { transform: translateY(-4px); }
+  }
+
+  /* Tournament tier table */
+  .tournament-tiers {
+    max-width: 1100px;
+    margin: 64px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .tournament-tiers-head {
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .tournament-tiers-head h3 {
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .tournament-tiers-head p { color: var(--text-muted); font-size: 14px; }
+  .tournament-table {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .tournament-row {
+    display: contents;
+  }
+  .tournament-cell {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14.5px;
+    display: flex; align-items: center;
+  }
+  .tournament-cell.head {
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .tournament-row:last-child .tournament-cell { border-bottom: none; }
+  .tournament-cell strong { color: var(--text); font-weight: 600; }
+  .tournament-cell .price-inr { color: var(--red-bright); font-weight: 700; font-size: 16px; }
+  .tournament-cell .price-usd { color: var(--text-muted); font-size: 13px; }
+  @media (max-width: 720px) {
+    .tournament-table {
+      grid-template-columns: 1fr 1fr;
+    }
+    .tournament-cell.head:nth-child(3),
+    .tournament-cell.head:nth-child(4) { display: none; }
+    .tournament-cell:nth-child(8n+3),
+    .tournament-cell:nth-child(8n+4) { display: none; }
+  }
+
+  /* Pricing footer note */
+  .pricing-extras {
+    max-width: 1100px;
+    margin: 48px auto 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .extra-card {
+    padding: 24px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .extra-card .extra-name {
+    font-size: 13px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .extra-card .extra-price {
+    font-size: 22px; font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .extra-card .extra-usd {
+    font-size: 13px; color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .extra-card .extra-desc { font-size: 13px; color: var(--text-muted); }
+  @media (max-width: 720px) { .pricing-extras { grid-template-columns: 1fr; } }
+
+  /* ================ FAQ ================ */
+  .faq {
+    background: linear-gradient(180deg, var(--bg) 0%, #0d0505 100%);
+  }
+  .faq-list { max-width: 800px; margin: 0 auto; }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .faq-item:hover { border-color: var(--border-strong); }
+  .faq-q {
+    padding: 22px 28px;
+    cursor: pointer; font-weight: 600;
+    font-size: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    user-select: none;
+  }
+  .faq-q::after {
+    content: "+";
+    color: var(--red-bright);
+    font-size: 24px; font-weight: 300;
+    transition: transform 0.2s;
+  }
+  .faq-item.open .faq-q::after { transform: rotate(45deg); }
+  .faq-a {
+    padding: 0 28px 22px;
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    display: none;
+  }
+  .faq-item.open .faq-a { display: block; }
+
+  /* ================ CTA ================ */
+  .cta {
+    padding: 120px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 50%, rgba(220, 38, 38, 0.25) 0%, transparent 70%),
+      var(--bg);
+  }
+  .cta-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+  .cta h2 {
+    font-size: clamp(34px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    line-height: 1.05;
+  }
+  .cta p {
+    color: var(--text-muted);
+    font-size: 18px;
+    margin-bottom: 40px;
+    max-width: 580px; margin-left: auto; margin-right: auto;
+  }
+  .cta-buttons {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+
+  /* ================ CONTACT ================ */
+  .contact-section { padding: 96px 24px; }
+  .contact-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 980px) { .contact-grid { grid-template-columns: repeat(3, 1fr); } }
+  .contact-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 20px;
+    text-align: center;
+    transition: all 0.25s;
+  }
+  .contact-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    background: rgba(220, 38, 38, 0.06);
+  }
+  .contact-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .contact-label {
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .contact-value {
+    color: var(--text); font-weight: 600;
+    font-size: 14px;
+    word-break: break-all;
+  }
+  @media (max-width: 720px) { .contact-grid { grid-template-columns: repeat(2, 1fr); max-width: 480px; } }
+  /* LinkedIn icon — keep it text-style instead of an emoji */
+  .contact-icon.li {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    color: #0a66c2;
+  }
+
+  /* ================ FOOTER ================ */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer .footer-logo {
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  footer .footer-logo {
+    display: inline-block;
+    background: #ffffff;
+    padding: 4px;
+    border-radius: 16px;
+    line-height: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 24px -8px rgba(220, 38, 38, 0.4);
+  }
+  footer .footer-logo img {
+    height: 180px;
+    width: auto;
+    display: block;
+  }
+
+  /* ================ FADE-IN ANIMATIONS ================ */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ NAV ============ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="logo" aria-label="Sako Analytics — home">
+        <img src="images/logo.png" alt="Sako Analytics">
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#reports">Reports</a>
+        <a href="#how">Process</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#contact" class="btn btn-primary">Get a demo</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-badge">
+          <span class="pulse"></span>
+          Now serving cricketers across India & UAE
+        </div>
+        <h1>
+          Every ball.<br>
+          Every data point.<br>
+          <span class="gradient-text">Every report.</span>
+        </h1>
+        <p>
+          Ball-by-ball cricket video analysis. Every clip tagged with over, batter, bowler, runs, extras, wicket type, fielder and bowler type — joined to a full data sheet, match reports, opponent scouting and tournament analytics. One private link per player. Watch and download on any phone.
+        </p>
+        <div class="hero-buttons">
+          <a href="#pricing" class="btn btn-primary">View pricing →</a>
+          <a href="#how" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="hero-trust">
+          <span class="dot"></span>
+          Trusted by coaches and cricket parents — replies in under 1 hour
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ STATS ============ -->
+  <section class="stats">
+    <div class="stats-grid">
+      <div class="stat fade-in">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Data points per ball</div>
+      </div>
+      <div class="stat fade-in">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Formats supported · T20 · ODI · Test · T10 · 100</div>
+      </div>
+      <div class="stat fade-in">
+        <div class="stat-num">PDF + PPT</div>
+        <div class="stat-label">Match, opponent &amp; tournament reports</div>
+      </div>
+      <div class="stat fade-in">
+        <div class="stat-num">24–48h</div>
+        <div class="stat-label">Turnaround after match</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPARISON ============ -->
+  <section class="block comparison">
+    <div class="section-header fade-in">
+      <span class="eyebrow">Why Sako</span>
+      <h2>Not a scoring app.<br>A <span class="gradient-text">coaching tool.</span></h2>
+      <p>Auto-highlight tools give you 90 seconds of a match. We give you every single ball — organized, tagged, and indexed by player and opponent.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card them fade-in">
+        <h3>Generic scoring apps</h3>
+        <ul class="compare-list">
+          <li>AI auto-highlights — 90 seconds, generic</li>
+          <li>Public team pages, anyone can view</li>
+          <li>One match per page, no tournament archive</li>
+          <li>Cuts trim mid-shot or include the run-up</li>
+          <li>No bowler perspective — clips treat every player as a "stat row"</li>
+          <li>Box score only — no ball-by-ball context</li>
+          <li>No reports, no scouting docs, no charts</li>
+        </ul>
+      </div>
+      <div class="compare-card us fade-in">
+        <h3>Sako Analytics</h3>
+        <ul class="compare-list">
+          <li>Full ball-by-ball: over, batter, bowler, runs, wide / no-ball / byes / leg-byes, wicket type, fielder, bowler type</li>
+          <li>Private password-protected link per client</li>
+          <li>Full tournament archive in one place</li>
+          <li>Hand-cut clips — clean start, clean end</li>
+          <li>Same clip viewed as batter, bowler, or team — title formats adapt</li>
+          <li>Match reports, opponent scout packs, tournament analytics as PDF + PPT</li>
+          <li>Charts: shot zones, bowler economy, dismissal patterns</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="block" id="features">
+    <div class="section-header fade-in">
+      <span class="eyebrow">What you get</span>
+      <h2>Built for cricket.<br>Not adapted from another sport.</h2>
+      <p>Every feature designed with one question in mind: how does a coach, player, or parent actually use this?</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature fade-in">
+        <div class="feature-icon">🏆</div>
+        <h3>Tournament → Team → Player</h3>
+        <p>Every clip filed under the tournament, team, and player it belongs to. Find any moment in three taps.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">📊</div>
+        <h3>Ball-by-ball data</h3>
+        <p>Each clip carries 15 data points: over, ball, batter, bowler, runs, wide, no-ball, bye, leg-bye, wicket type, fielder, bowler type, commentary, ball ID, innings.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">📄</div>
+        <h3>Match reports (PDF)</h3>
+        <p>After every match, a written report — what worked, what didn't, key moments — delivered as a downloadable PDF in the client's library.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">🎯</div>
+        <h3>Opponent analysis (PPT)</h3>
+        <p>Facing a new team next week? Get a slide deck of their key players' stock balls, weak zones, and dismissal patterns. Ready to present in the team meeting.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">📈</div>
+        <h3>Tournament analytics</h3>
+        <p>End-of-tournament report with charts: shot zones, run distribution by over, bowler economy, wicket patterns. Yours to keep, share, recruit with.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">⚡</div>
+        <h3>One-tap filters</h3>
+        <p>Boundaries, wickets, dots, bookmarked, by match. Turn an hour of footage into a 90-second highlight reel instantly.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">⚾</div>
+        <h3>Batter · Bowler · Team views</h3>
+        <p>Same clip, three views. In batting mode you see "Ball 5.3 — Sharma v Bhai, 4 runs". In bowling mode the names flip. In team mode it shows team v team, innings. Titles adapt automatically.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">🔒</div>
+        <h3>Private client links</h3>
+        <p>Every client gets their own password-protected link. They see only the player, team, or tournament you've scoped them to.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">★</div>
+        <h3>Bookmarks, ZIP &amp; MP4 download</h3>
+        <p>Players bookmark favorites and download every visible clip as one merged MP4 highlight reel, or as a ZIP of individual files.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">🔢</div>
+        <h3>Career stats tables</h3>
+        <p>Every player gets a live batting + bowling card: Mat, Inns, Runs, HS, Ave, SR, 100s, 50s, 4s, 6s — and Mdns, Wkts, BBI, Econ, 5w. Sortable, filterable by format.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">📺</div>
+        <h3>Playlist-style watching</h3>
+        <p>Big sticky player at the top, compact clip list below. Auto-advance plays every boundary back-to-back like a highlight reel. Prev / Next / Download on every clip.</p>
+      </div>
+      <div class="feature fade-in">
+        <div class="feature-icon">📱</div>
+        <h3>Mobile-first, works offline</h3>
+        <p>Any phone or tablet. No app to install. Sessions survive app switching. Downloads keep working without signal.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REPORTS ============ -->
+  <section class="block reports" id="reports">
+    <div class="section-header fade-in">
+      <span class="eyebrow">Reports &amp; Analytics</span>
+      <h2>Not just clips.<br>Written <span class="gradient-text">reports and charts</span> for every level.</h2>
+      <p>After the match, after the opponent reveal, after the tournament — coaches and players open the same private link and find the docs waiting. PDF or PPT, ready to share.</p>
+    </div>
+
+    <div class="reports-grid">
+
+      <!-- Match Report -->
+      <div class="report-card fade-in">
+        <div class="report-thumb">
+          <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-label="Match report preview">
+            <defs>
+              <linearGradient id="rep1-paper" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fafafa"/>
+                <stop offset="100%" stop-color="#e5e5e5"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="300" fill="#150505"/>
+            <!-- paper -->
+            <rect x="60" y="40" width="280" height="220" rx="6" fill="url(#rep1-paper)"/>
+            <!-- header bar -->
+            <rect x="60" y="40" width="280" height="34" rx="6" fill="#DC2626"/>
+            <rect x="60" y="64" width="280" height="10" fill="#DC2626"/>
+            <text x="76" y="62" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" letter-spacing="2">MATCH REPORT</text>
+            <text x="324" y="62" font-family="-apple-system, sans-serif" font-size="9" fill="#fff" opacity="0.8" text-anchor="end">PDF</text>
+            <!-- title -->
+            <text x="76" y="100" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#1a1a1a">RCB vs CSK · TNPL 2026</text>
+            <text x="76" y="116" font-family="-apple-system, sans-serif" font-size="8" fill="#666">14 May 2026 · Semi-final</text>
+            <!-- score row -->
+            <rect x="76" y="128" width="100" height="40" rx="4" fill="#f5f5f5"/>
+            <text x="126" y="143" font-family="-apple-system, sans-serif" font-size="7" fill="#666" text-anchor="middle">RCB</text>
+            <text x="126" y="160" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#1a1a1a" text-anchor="middle">186/4</text>
+            <rect x="184" y="128" width="100" height="40" rx="4" fill="#f5f5f5"/>
+            <text x="234" y="143" font-family="-apple-system, sans-serif" font-size="7" fill="#666" text-anchor="middle">CSK</text>
+            <text x="234" y="160" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#1a1a1a" text-anchor="middle">180/8</text>
+            <!-- chart bars -->
+            <text x="76" y="186" font-family="-apple-system, sans-serif" font-size="7" font-weight="700" fill="#1a1a1a">RUNS BY OVER</text>
+            <rect x="76" y="194" width="14" height="22" fill="#DC2626"/>
+            <rect x="94" y="206" width="14" height="10" fill="#DC2626" opacity="0.8"/>
+            <rect x="112" y="200" width="14" height="16" fill="#DC2626" opacity="0.85"/>
+            <rect x="130" y="190" width="14" height="26" fill="#DC2626" opacity="0.9"/>
+            <rect x="148" y="184" width="14" height="32" fill="#DC2626"/>
+            <rect x="166" y="196" width="14" height="20" fill="#DC2626" opacity="0.8"/>
+            <rect x="184" y="180" width="14" height="36" fill="#DC2626"/>
+            <rect x="202" y="200" width="14" height="16" fill="#DC2626" opacity="0.85"/>
+            <rect x="220" y="174" width="14" height="42" fill="#DC2626"/>
+            <rect x="238" y="188" width="14" height="28" fill="#DC2626" opacity="0.9"/>
+            <rect x="256" y="178" width="14" height="38" fill="#DC2626"/>
+            <rect x="274" y="170" width="14" height="46" fill="#DC2626"/>
+            <!-- footer line -->
+            <line x1="76" y1="234" x2="324" y2="234" stroke="#e5e5e5" stroke-width="1"/>
+            <text x="76" y="248" font-family="-apple-system, sans-serif" font-size="7" fill="#888">Top performer: R. Sharma · 72(48) · 3×4 · 4×6</text>
+          </svg>
+        </div>
+        <div class="report-body">
+          <div class="report-format">PDF · 4–6 pages</div>
+          <h3>Match Report</h3>
+          <p>Per match: scorecard, runs-per-over chart, top performers, turning points, partnerships, wicket sequence. Written commentary, not just numbers.</p>
+        </div>
+      </div>
+
+      <!-- Opponent Analysis -->
+      <div class="report-card fade-in">
+        <div class="report-thumb">
+          <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-label="Opponent analysis preview">
+            <defs>
+              <linearGradient id="rep2-paper" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fafafa"/>
+                <stop offset="100%" stop-color="#e5e5e5"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="300" fill="#150505"/>
+            <rect x="60" y="40" width="280" height="220" rx="6" fill="url(#rep2-paper)"/>
+            <rect x="60" y="40" width="280" height="34" rx="6" fill="#1F2937"/>
+            <rect x="60" y="64" width="280" height="10" fill="#1F2937"/>
+            <text x="76" y="62" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" letter-spacing="2">OPPONENT SCOUT</text>
+            <text x="324" y="62" font-family="-apple-system, sans-serif" font-size="9" fill="#fff" opacity="0.8" text-anchor="end">PPT</text>
+            <!-- title -->
+            <text x="76" y="100" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#1a1a1a">K. Bhai — Strike bowler, CSK</text>
+            <text x="76" y="116" font-family="-apple-system, sans-serif" font-size="8" fill="#666">Right-arm Pace · 142 deliveries analysed</text>
+            <!-- pitch map -->
+            <rect x="76" y="128" width="120" height="80" rx="4" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+            <text x="136" y="143" font-family="-apple-system, sans-serif" font-size="7" fill="#15803d" text-anchor="middle" font-weight="700">PITCH MAP</text>
+            <!-- dots on pitch -->
+            <circle cx="100" cy="170" r="3" fill="#DC2626"/>
+            <circle cx="115" cy="185" r="3" fill="#DC2626"/>
+            <circle cx="125" cy="175" r="3" fill="#DC2626"/>
+            <circle cx="135" cy="190" r="3" fill="#DC2626"/>
+            <circle cx="145" cy="180" r="3" fill="#DC2626"/>
+            <circle cx="160" cy="195" r="3" fill="#DC2626"/>
+            <circle cx="170" cy="178" r="3" fill="#DC2626"/>
+            <circle cx="180" cy="192" r="3" fill="#DC2626"/>
+            <!-- stats panel -->
+            <rect x="204" y="128" width="120" height="80" rx="4" fill="#f5f5f5"/>
+            <text x="216" y="143" font-family="-apple-system, sans-serif" font-size="7" fill="#666" font-weight="700">STOCK BALL</text>
+            <text x="216" y="155" font-family="-apple-system, sans-serif" font-size="9" fill="#1a1a1a" font-weight="600">In-swing · 138 kph</text>
+            <text x="216" y="173" font-family="-apple-system, sans-serif" font-size="7" fill="#666" font-weight="700">VARIATION</text>
+            <text x="216" y="185" font-family="-apple-system, sans-serif" font-size="9" fill="#1a1a1a" font-weight="600">Slower ball · 118 kph</text>
+            <text x="216" y="200" font-family="-apple-system, sans-serif" font-size="7" fill="#DC2626" font-weight="700">→ weak vs leg-side</text>
+            <!-- footer -->
+            <line x1="76" y1="222" x2="324" y2="222" stroke="#e5e5e5" stroke-width="1"/>
+            <text x="76" y="236" font-family="-apple-system, sans-serif" font-size="7" fill="#888">Econ 6.8 · Avg 18.2 · SR 14.1 · Dot % 38%</text>
+            <text x="76" y="248" font-family="-apple-system, sans-serif" font-size="7" fill="#888">Sample clips embedded as QR links</text>
+          </svg>
+        </div>
+        <div class="report-body">
+          <div class="report-format">PPT · 8–14 slides</div>
+          <h3>Opponent Analysis</h3>
+          <p>For every opposition player you'll face: stock ball, variations, pitch map, weak zones, dismissal patterns. Each slide links back to video clips in the library.</p>
+        </div>
+      </div>
+
+      <!-- Tournament Analytics -->
+      <div class="report-card fade-in">
+        <div class="report-thumb">
+          <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-label="Tournament analytics preview">
+            <defs>
+              <linearGradient id="rep3-paper" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fafafa"/>
+                <stop offset="100%" stop-color="#e5e5e5"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="300" fill="#150505"/>
+            <rect x="60" y="40" width="280" height="220" rx="6" fill="url(#rep3-paper)"/>
+            <rect x="60" y="40" width="280" height="34" rx="6" fill="#D4AF37"/>
+            <rect x="60" y="64" width="280" height="10" fill="#D4AF37"/>
+            <text x="76" y="62" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#1a1a1a" letter-spacing="2">TOURNAMENT REPORT</text>
+            <text x="324" y="62" font-family="-apple-system, sans-serif" font-size="9" fill="#1a1a1a" opacity="0.8" text-anchor="end">PDF + PPT</text>
+            <text x="76" y="100" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#1a1a1a">TNPL 2026 · Season Wrap</text>
+            <text x="76" y="116" font-family="-apple-system, sans-serif" font-size="8" fill="#666">12 matches · 2,847 balls · 8 teams</text>
+
+            <!-- donut chart -->
+            <g transform="translate(120, 178)">
+              <circle r="36" fill="#f5f5f5"/>
+              <path d="M 0 -36 A 36 36 0 0 1 31.2 18 L 0 0 Z" fill="#DC2626"/>
+              <path d="M 31.2 18 A 36 36 0 0 1 -18 31.2 L 0 0 Z" fill="#1F2937"/>
+              <path d="M -18 31.2 A 36 36 0 0 1 -31.2 -18 L 0 0 Z" fill="#D4AF37"/>
+              <path d="M -31.2 -18 A 36 36 0 0 1 0 -36 L 0 0 Z" fill="#86efac"/>
+              <circle r="14" fill="#fafafa"/>
+            </g>
+            <text x="168" y="148" font-family="-apple-system, sans-serif" font-size="7" font-weight="700" fill="#1a1a1a">RUN BREAKDOWN</text>
+            <g font-family="-apple-system, sans-serif" font-size="7" fill="#1a1a1a">
+              <rect x="168" y="158" width="8" height="8" fill="#DC2626"/><text x="180" y="165">Boundaries · 42%</text>
+              <rect x="168" y="172" width="8" height="8" fill="#1F2937"/><text x="180" y="179">Singles · 28%</text>
+              <rect x="168" y="186" width="8" height="8" fill="#D4AF37"/><text x="180" y="193">Twos / threes · 18%</text>
+              <rect x="168" y="200" width="8" height="8" fill="#86efac"/><text x="180" y="207">Dots · 12%</text>
+            </g>
+            <line x1="76" y1="226" x2="324" y2="226" stroke="#e5e5e5" stroke-width="1"/>
+            <text x="76" y="240" font-family="-apple-system, sans-serif" font-size="7" fill="#888">Top run-scorer · Top bowler · MVP · awards</text>
+            <text x="76" y="252" font-family="-apple-system, sans-serif" font-size="7" fill="#888">Per-player pages · per-team pages · recruiting ready</text>
+          </svg>
+        </div>
+        <div class="report-body">
+          <div class="report-format">PDF + PPT · 20+ pages</div>
+          <h3>Tournament Analytics</h3>
+          <p>End-of-tournament wrap: leaderboards, run breakdowns, shot zones, bowler economy, dismissal patterns. Per-player and per-team pages — useful for recruiting and reviewing.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="fade-in" style="text-align:center; color: var(--text-muted); font-size: 14px; margin-top: 36px;">
+      Reports live in the same private library as the video clips. Coaches upload — players open the link and download. PDF, PPT, and chart exports included.
+    </p>
+  </section>
+
+  <!-- ============ SHOWCASE ============ -->
+  <section class="block showcase">
+    <div class="showcase-grid">
+      <div class="showcase-image-wrap fade-in">
+        <!-- Custom SVG mockup. Swap with <img src="images/app-mockup.png"> when you have your own. -->
+        <svg viewBox="0 0 700 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-label="Sako Analytics app interface on a phone">
+          <defs>
+            <linearGradient id="mock-bg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1a0606"/>
+              <stop offset="100%" stop-color="#0a0a0a"/>
+            </linearGradient>
+            <linearGradient id="mock-frame" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2a2a2a"/>
+              <stop offset="100%" stop-color="#0d0d0d"/>
+            </linearGradient>
+            <linearGradient id="mock-screen" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#100303"/>
+              <stop offset="100%" stop-color="#080202"/>
+            </linearGradient>
+            <linearGradient id="mock-card" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1f0a0a"/>
+              <stop offset="100%" stop-color="#150505"/>
+            </linearGradient>
+            <linearGradient id="mock-thumb" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3a1212"/>
+              <stop offset="100%" stop-color="#180404"/>
+            </linearGradient>
+            <linearGradient id="mock-redbtn" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#EF4444"/>
+              <stop offset="100%" stop-color="#991B1B"/>
+            </linearGradient>
+            <radialGradient id="mock-glow" cx="50%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#DC2626" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#DC2626" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <rect width="700" height="900" fill="url(#mock-bg)"/>
+          <rect width="700" height="900" fill="url(#mock-glow)"/>
+
+          <!-- phone frame -->
+          <rect x="120" y="50" width="460" height="800" rx="50" fill="url(#mock-frame)" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- screen -->
+          <rect x="135" y="65" width="430" height="770" rx="38" fill="url(#mock-screen)"/>
+          <!-- notch -->
+          <rect x="290" y="65" width="120" height="22" rx="11" fill="#000"/>
+
+          <!-- status bar -->
+          <text x="170" y="105" fill="#fff" font-family="-apple-system, sans-serif" font-size="12" font-weight="700">9:41</text>
+          <g transform="translate(490, 95)">
+            <rect x="0" y="6" width="3" height="4" fill="#fff" opacity="0.85"/>
+            <rect x="5" y="4" width="3" height="6" fill="#fff" opacity="0.85"/>
+            <rect x="10" y="2" width="3" height="8" fill="#fff" opacity="0.85"/>
+            <rect x="15" y="0" width="3" height="10" fill="#fff" opacity="0.85"/>
+            <rect x="40" y="2" width="22" height="10" rx="2" fill="none" stroke="#fff" opacity="0.85"/>
+            <rect x="42" y="4" width="16" height="6" fill="#fff" opacity="0.85"/>
+            <rect x="62" y="5" width="2" height="4" fill="#fff" opacity="0.6"/>
+          </g>
+
+          <!-- header logo -->
+          <g transform="translate(160, 130)">
+            <rect x="0" y="0" width="32" height="32" rx="8" fill="url(#mock-redbtn)"/>
+            <text x="16" y="22" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="18" font-weight="800">S</text>
+            <text x="44" y="22" fill="#fff" font-family="-apple-system, sans-serif" font-size="14" font-weight="700">Team Film Room</text>
+            <rect x="320" y="6" width="56" height="20" rx="10" fill="rgba(220,38,38,0.18)" stroke="rgba(220,38,38,0.4)"/>
+            <text x="348" y="20" text-anchor="middle" fill="#EF4444" font-family="-apple-system, sans-serif" font-size="9.5" font-weight="700" letter-spacing="1">COACH</text>
+          </g>
+
+          <!-- breadcrumbs -->
+          <g transform="translate(160, 185)" font-family="-apple-system, sans-serif" font-size="11">
+            <text x="0" y="0" fill="#EF4444" font-weight="500">Tournaments</text>
+            <text x="76" y="0" fill="#666">›</text>
+            <text x="86" y="0" fill="#EF4444">TNPL 2026</text>
+            <text x="153" y="0" fill="#666">›</text>
+            <text x="163" y="0" fill="#EF4444">Chepauk</text>
+            <text x="218" y="0" fill="#666">›</text>
+            <text x="228" y="0" fill="#fff" font-weight="700">R. Sharma</text>
+          </g>
+
+          <!-- perspective toggle -->
+          <g transform="translate(160, 210)">
+            <rect x="0" y="0" width="118" height="32" rx="16" fill="#DC2626"/>
+            <text x="59" y="20" text-anchor="middle" fill="#fff" font-family="-apple-system, sans-serif" font-size="11" font-weight="700">🏏 As Batter · 12</text>
+            <rect x="128" y="0" width="118" height="32" rx="16" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)"/>
+            <text x="187" y="20" text-anchor="middle" fill="#a1a1a1" font-family="-apple-system, sans-serif" font-size="11" font-weight="600">⚾ As Bowler · 5</text>
+          </g>
+
+          <!-- filter pills -->
+          <g transform="translate(160, 258)">
+            <rect x="0" y="0" width="56" height="28" rx="14" fill="#DC2626"/>
+            <text x="28" y="18" text-anchor="middle" fill="#fff" font-family="-apple-system, sans-serif" font-size="10.5" font-weight="700">All · 12</text>
+            <rect x="64" y="0" width="100" height="28" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)"/>
+            <text x="114" y="18" text-anchor="middle" fill="#cfcfcf" font-family="-apple-system, sans-serif" font-size="10.5">Boundaries · 5</text>
+            <rect x="172" y="0" width="80" height="28" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)"/>
+            <text x="212" y="18" text-anchor="middle" fill="#cfcfcf" font-family="-apple-system, sans-serif" font-size="10.5">Wickets · 2</text>
+            <rect x="260" y="0" width="60" height="28" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)"/>
+            <text x="290" y="18" text-anchor="middle" fill="#cfcfcf" font-family="-apple-system, sans-serif" font-size="10.5">Dots · 5</text>
+          </g>
+
+          <!-- Card 1: a Four (batting mode title) -->
+          <g transform="translate(160, 305)">
+            <rect x="0" y="0" width="380" height="120" rx="12" fill="url(#mock-card)" stroke="rgba(220,38,38,0.18)"/>
+            <rect x="10" y="10" width="100" height="100" rx="8" fill="url(#mock-thumb)"/>
+            <polygon points="48,42 48,78 76,60" fill="#fff" opacity="0.65"/>
+            <rect x="14" y="14" width="22" height="16" rx="4" fill="#10b981"/>
+            <text x="25" y="26" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="11" font-weight="800">4</text>
+            <text x="125" y="32" fill="#fff" font-family="-apple-system, sans-serif" font-size="12.5" font-weight="700">Ball 14.3 — Sharma v Bhai, 4 runs</text>
+            <rect x="125" y="44" width="78" height="20" rx="10" fill="rgba(220,38,38,0.15)" stroke="rgba(220,38,38,0.35)"/>
+            <text x="164" y="58" text-anchor="middle" fill="#ff8888" font-family="ui-monospace, sans-serif" font-size="10" font-weight="700">RCBvCSK143</text>
+            <rect x="207" y="44" width="80" height="20" rx="10" fill="rgba(47,129,247,0.18)" stroke="rgba(47,129,247,0.35)"/>
+            <text x="247" y="58" text-anchor="middle" fill="#79b3ff" font-family="-apple-system, sans-serif" font-size="10" font-weight="600">vs CSK</text>
+            <text x="125" y="82" fill="#a1a1a1" font-family="-apple-system, sans-serif" font-size="10.5">Pace · innings 1 · 4 runs · cover</text>
+            <text x="125" y="102" fill="#666" font-family="-apple-system, sans-serif" font-size="10">2 May 2026 · 18.2 MB</text>
+          </g>
+
+          <!-- Card 2: a Six -->
+          <g transform="translate(160, 437)">
+            <rect x="0" y="0" width="380" height="120" rx="12" fill="url(#mock-card)" stroke="rgba(220,38,38,0.18)"/>
+            <rect x="10" y="10" width="100" height="100" rx="8" fill="url(#mock-thumb)"/>
+            <polygon points="48,42 48,78 76,60" fill="#fff" opacity="0.65"/>
+            <rect x="14" y="14" width="22" height="16" rx="4" fill="#f59e0b"/>
+            <text x="25" y="26" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="11" font-weight="800">6</text>
+            <text x="125" y="32" fill="#fff" font-family="-apple-system, sans-serif" font-size="12.5" font-weight="700">Ball 18.2 — Sharma v Iyer, 6 runs</text>
+            <rect x="125" y="44" width="78" height="20" rx="10" fill="rgba(220,38,38,0.15)" stroke="rgba(220,38,38,0.35)"/>
+            <text x="164" y="58" text-anchor="middle" fill="#ff8888" font-family="ui-monospace, sans-serif" font-size="10" font-weight="700">RCBvCSK220</text>
+            <rect x="207" y="44" width="80" height="20" rx="10" fill="rgba(47,129,247,0.18)" stroke="rgba(47,129,247,0.35)"/>
+            <text x="247" y="58" text-anchor="middle" fill="#79b3ff" font-family="-apple-system, sans-serif" font-size="10" font-weight="600">Final</text>
+            <text x="125" y="82" fill="#a1a1a1" font-family="-apple-system, sans-serif" font-size="10.5">Spin · innings 2 · 6 runs · midwicket</text>
+            <text x="125" y="102" fill="#666" font-family="-apple-system, sans-serif" font-size="10">5 May 2026 · 22.7 MB</text>
+          </g>
+
+          <!-- Card 3: a Wicket -->
+          <g transform="translate(160, 569)">
+            <rect x="0" y="0" width="380" height="120" rx="12" fill="url(#mock-card)" stroke="rgba(220,38,38,0.18)"/>
+            <rect x="10" y="10" width="100" height="100" rx="8" fill="url(#mock-thumb)"/>
+            <polygon points="48,42 48,78 76,60" fill="#fff" opacity="0.65"/>
+            <rect x="14" y="14" width="22" height="16" rx="4" fill="#DC2626"/>
+            <text x="25" y="26" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="11" font-weight="800">W</text>
+            <text x="125" y="32" fill="#fff" font-family="-apple-system, sans-serif" font-size="12.5" font-weight="700">Ball 19.4 — Sharma v Patel, WICKET</text>
+            <rect x="125" y="44" width="78" height="20" rx="10" fill="rgba(220,38,38,0.15)" stroke="rgba(220,38,38,0.35)"/>
+            <text x="164" y="58" text-anchor="middle" fill="#ff8888" font-family="ui-monospace, sans-serif" font-size="10" font-weight="700">RCBvCSK238</text>
+            <rect x="207" y="44" width="80" height="20" rx="10" fill="rgba(47,129,247,0.18)" stroke="rgba(47,129,247,0.35)"/>
+            <text x="247" y="58" text-anchor="middle" fill="#79b3ff" font-family="-apple-system, sans-serif" font-size="10" font-weight="600">Semi-final</text>
+            <text x="125" y="82" fill="#a1a1a1" font-family="-apple-system, sans-serif" font-size="10.5">Pace · Bowled · slower ball</text>
+            <text x="125" y="102" fill="#666" font-family="-apple-system, sans-serif" font-size="10">7 May 2026 · 14.5 MB</text>
+          </g>
+
+          <!-- download button -->
+          <g transform="translate(160, 712)">
+            <rect x="0" y="0" width="380" height="50" rx="25" fill="url(#mock-redbtn)"/>
+            <text x="190" y="32" text-anchor="middle" fill="#fff" font-family="-apple-system, sans-serif" font-size="14" font-weight="700">⬇  Download as single video (.mp4)</text>
+          </g>
+
+          <!-- home indicator -->
+          <rect x="290" y="800" width="120" height="4" rx="2" fill="#fff" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="fade-in">
+        <span class="eyebrow">A coach's tool, in every player's pocket</span>
+        <h2 class="headline">Every clip carries its data.</h2>
+        <p style="color: var(--text-muted); font-size: 16px; margin-top: 20px;">
+          The card title tells you the ball — over.ball, the batter, the bowler, what happened, and how many runs. Big sticky player at the top, clip list below. Auto-advance plays clips like a highlight reel. Reports and analytics docs sit in the same library.
+        </p>
+        <ul class="showcase-list">
+          <li>Browse Batting · Bowling · Tournament like a phone contact list — search any player instantly</li>
+          <li>Sticky video player at the top stays put while you scroll the clip list</li>
+          <li>Auto-advance through boundaries, wickets, or any filter — like Netflix for cricket</li>
+          <li>One-tap filters: 4 / 6 / W / ★ Bookmarked · plus per-match and per-player dropdowns</li>
+          <li>Live career stats: Mat, Runs, Ave, SR, 100s, 50s, Wkts, Econ, 5-fers — sortable</li>
+          <li>Download a single clip, a merged MP4 highlight, or a ZIP — your call</li>
+          <li>Match reports (PDF), opponent decks (PPT), tournament analytics — same link</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="block" id="how">
+    <div class="section-header fade-in">
+      <span class="eyebrow">How it works</span>
+      <h2>From match day to phone in three steps.</h2>
+      <p>No app to download. No account to create. Just a link, a password, and the clips.</p>
+    </div>
+    <div class="howto-grid">
+      <div class="step fade-in">
+        <h3>You send us the footage</h3>
+        <p>After a match, hand us the raw video. We pull ball-by-ball data, cut every ball, and tag each clip with over, batter, bowler, runs, extras, wicket type, fielder and bowler type.</p>
+      </div>
+      <div class="step fade-in">
+        <h3>We organize and write up</h3>
+        <p>Clips file under Tournament → Team → Player. We write the match report (PDF), build opponent scouting decks (PPT) for your next match, and roll up tournament analytics with charts.</p>
+      </div>
+      <div class="step fade-in">
+        <h3>Players get a private link</h3>
+        <p>Every player or parent gets a personal link plus a password. They watch their clips in Batting / Bowling / Team mode, download videos and reports, study before the next game.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRICING ============ -->
+  <section class="block pricing" id="pricing">
+    <div class="section-header fade-in">
+      <span class="eyebrow">Pricing</span>
+      <h2>Pay per tournament.<br>No subscriptions. No lock-in.</h2>
+      <p>Pick the package that fits your team, your tournament, or your player. Pricing scales with the size of the event — fair to you, fair to us.</p>
+    </div>
+
+    <div class="pricing-grid">
+
+      <!-- Player -->
+      <div class="price-card fade-in">
+        <div class="price-name">Player Pack</div>
+        <div class="price-amount"><span class="currency">₹</span>4,999</div>
+        <div class="price-usd">or <strong>$99 USD</strong></div>
+        <div class="price-period">per tournament, per player</div>
+        <ul class="price-features">
+          <li>One player's clips for one tournament</li>
+          <li>Full ball-by-ball data per clip</li>
+          <li>Batting + Bowling view modes</li>
+          <li>Match reports (PDF) per match</li>
+          <li>Private link with password</li>
+          <li>Bookmarks &amp; ZIP / MP4 download</li>
+        </ul>
+        <a href="#contact" class="price-cta">Book Player Pack</a>
+      </div>
+
+      <!-- Team (featured) -->
+      <div class="price-card featured fade-in">
+        <span class="price-tag">Most Popular</span>
+        <div class="price-name">Team Pack</div>
+        <div class="price-amount"><span class="currency">₹</span>29,999</div>
+        <div class="price-usd">or <strong>$599 USD</strong></div>
+        <div class="price-period">per tournament, full team (up to 8 matches)</div>
+        <ul class="price-features">
+          <li>Every player on the team</li>
+          <li>Personal link &amp; password for each player</li>
+          <li>Coach gets full-team view + Team mode</li>
+          <li>Full ball-by-ball data on every clip</li>
+          <li>Match reports (PDF) + opponent decks (PPT)</li>
+          <li>Bookmarks per player · Bulk MP4 / ZIP</li>
+          <li>Priority WhatsApp support</li>
+          <li>Extra matches: ₹3,000 / $59 each</li>
+        </ul>
+        <a href="#contact" class="price-cta">Book Team Pack</a>
+      </div>
+
+      <!-- Tournament -->
+      <div class="price-card fade-in">
+        <div class="price-name">Tournament Pack</div>
+        <div class="price-amount"><span class="currency">₹</span>99,999</div>
+        <div class="price-usd">or <strong>$1,999 USD</strong></div>
+        <div class="price-period">small tournament (up to 20 matches)</div>
+        <ul class="price-features">
+          <li>Every team and every player</li>
+          <li>Multiple coach accounts</li>
+          <li>Personal link for each cricketer</li>
+          <li>Match reports + opponent decks for every fixture</li>
+          <li>Tournament analytics wrap (PDF + PPT)</li>
+          <li>Custom tournament branding</li>
+          <li>Priority WhatsApp support</li>
+          <li>Larger tournaments — see tiers below</li>
+        </ul>
+        <a href="#pricing-tiers" class="price-cta">See full tournament pricing</a>
+      </div>
+
+    </div>
+
+    <!-- Tournament tier table -->
+    <div class="tournament-tiers fade-in" id="pricing-tiers">
+      <div class="tournament-tiers-head">
+        <h3>Tournament Pack — by event size</h3>
+        <p>The bigger the tournament, the more matches we cover. Pricing scales with match count so you only pay for the work involved.</p>
+      </div>
+      <div class="tournament-table">
+        <div class="tournament-cell head">Tier</div>
+        <div class="tournament-cell head">Matches</div>
+        <div class="tournament-cell head">Price (INR)</div>
+        <div class="tournament-cell head">Price (USD)</div>
+
+        <div class="tournament-cell"><strong>Small</strong></div>
+        <div class="tournament-cell">Up to 20</div>
+        <div class="tournament-cell"><span class="price-inr">₹99,999</span></div>
+        <div class="tournament-cell"><span class="price-usd">$1,999</span></div>
+
+        <div class="tournament-cell"><strong>Medium</strong></div>
+        <div class="tournament-cell">21 – 35</div>
+        <div class="tournament-cell"><span class="price-inr">₹1,49,999</span></div>
+        <div class="tournament-cell"><span class="price-usd">$2,999</span></div>
+
+        <div class="tournament-cell"><strong>Large</strong></div>
+        <div class="tournament-cell">36 – 50</div>
+        <div class="tournament-cell"><span class="price-inr">₹1,99,999</span></div>
+        <div class="tournament-cell"><span class="price-usd">$3,999</span></div>
+
+        <div class="tournament-cell"><strong>XL</strong></div>
+        <div class="tournament-cell">50+</div>
+        <div class="tournament-cell"><span class="price-inr">Custom</span></div>
+        <div class="tournament-cell"><span class="price-usd">Custom</span></div>
+      </div>
+    </div>
+
+    <!-- Extras -->
+    <div class="pricing-extras">
+      <div class="extra-card fade-in">
+        <div class="extra-name">Single Match Pack</div>
+        <div class="extra-price">₹1,999</div>
+        <div class="extra-usd">$39 USD</div>
+        <div class="extra-desc">One player, one match — perfect to try us before you commit</div>
+      </div>
+      <div class="extra-card fade-in">
+        <div class="extra-name">Per-Match Coverage</div>
+        <div class="extra-price">₹15,000</div>
+        <div class="extra-usd">$299 USD</div>
+        <div class="extra-desc">Full coverage of one match — all teams, all clips</div>
+      </div>
+      <div class="extra-card fade-in">
+        <div class="extra-name">Academy Annual</div>
+        <div class="extra-price">₹3,99,000</div>
+        <div class="extra-usd">$4,999 USD</div>
+        <div class="extra-desc">4–6 tournaments per year with priority service</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="block faq">
+    <div class="section-header fade-in">
+      <span class="eyebrow">Common questions</span>
+      <h2>Things coaches ask us.</h2>
+      <p>If your question isn't here, message us on WhatsApp — we usually reply within an hour.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item fade-in">
+        <div class="faq-q">How quickly will the clips and reports be ready after a match?</div>
+        <div class="faq-a">For a Player or Team Pack, expect ball-by-ball clips tagged and uploaded within 24–48 hours of receiving the raw footage. The written match report (PDF) lands within the same window. Opponent decks for the next fixture come 24–48 hours before that match.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">What exactly is tracked per ball?</div>
+        <div class="faq-a">15 data points: Ball ID, innings, over, ball, batter, bowler, runs, wide, no-ball, bye, leg-bye, wicket type, fielder, bowler type (spin/pace), and commentary. The data is joined to every clip so the video card title tells you the whole story before you press play.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">Where do the reports live? Do I have to chase them by email?</div>
+        <div class="faq-a">No. PDF and PPT reports upload into the same private library as the video clips. Coach or player opens the link, sees the videos and the reports side by side, downloads what they want. Nothing arrives by email unless you ask for it.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">What devices can my players use?</div>
+        <div class="faq-a">Any phone, tablet, or laptop with a browser. There's nothing to install. Players just open the link, type the password, and watch. Tested on iOS Safari, Android Chrome, and desktop browsers.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">Is the footage really private?</div>
+        <div class="faq-a">Yes. Every clip and every report sits behind a password-protected link. Each client only sees the content in the scope you've granted them — a single player, a single team, or a whole tournament. Nothing is publicly listable. Nothing is on YouTube or Google.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">Can players keep the clips and reports after the tournament ends?</div>
+        <div class="faq-a">Absolutely. Clips can be downloaded as a stitched MP4 highlight reel or as a ZIP of individual files. PDFs and PPTs download directly. Once downloaded, they're theirs to keep forever.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">What's in an opponent scout pack?</div>
+        <div class="faq-a">A PPT deck plus a private mini-library showing every ball a specific opposition player has bowled or batted in tournaments we've already covered. Stock ball, variations, pitch map, weak zones, dismissal patterns — each slide links back to the actual video. The kind of preparation pro teams pay full-time analysts for.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">Do you cut the videos yourselves?</div>
+        <div class="faq-a">Yes. Send us full match footage and we'll cut and tag every ball, then build the reports. Or send pre-cut clips with the over/ball details and we'll just file them and write the reports. Pricing reflects the work — we'll quote you based on what you send.</div>
+      </div>
+      <div class="faq-item fade-in">
+        <div class="faq-q">Can I see a sample before paying?</div>
+        <div class="faq-a">Yes. WhatsApp us and we'll share a live demo link with sample clips, a sample match report, and a sample opponent deck. You can show your team before you decide. No pressure.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta" id="contact">
+    <div class="cta-bg"></div>
+    <div class="cta-content fade-in">
+      <h2>Ready to give your players<br>something they'll <span class="gradient-text">actually watch?</span></h2>
+      <p>Send us a WhatsApp. We'll set up a free demo with sample clips, a sample match report, and an opponent deck — so you can see exactly what you're getting before you decide.</p>
+      <div class="cta-buttons">
+        <a href="https://wa.me/916385831643?text=Hi%20Sako%20Analytics%2C%20I'm%20interested%20in%20a%20demo" class="btn btn-primary" target="_blank" rel="noopener">💬 WhatsApp us now</a>
+        <a href="mailto:sakoanalytics@gmail.com" class="btn btn-ghost">Email us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="contact-section">
+    <div class="section-header fade-in" style="margin-bottom: 48px;">
+      <span class="eyebrow">Reach us</span>
+      <h2 class="headline">Pick whichever is easiest.</h2>
+    </div>
+    <div class="contact-grid">
+      <a class="contact-card fade-in" href="https://wa.me/916385831643?text=Hi%20Sako%20Analytics%2C%20I%20want%20to%20learn%20more" target="_blank" rel="noopener">
+        <span class="contact-icon">💬</span>
+        <div class="contact-label">WhatsApp</div>
+        <div class="contact-value">+91 63858 31643</div>
+      </a>
+      <a class="contact-card fade-in" href="tel:+916385831643">
+        <span class="contact-icon">📞</span>
+        <div class="contact-label">Phone</div>
+        <div class="contact-value">+91 63858 31643</div>
+      </a>
+      <a class="contact-card fade-in" href="mailto:sakoanalytics@gmail.com">
+        <span class="contact-icon">✉</span>
+        <div class="contact-label">Email</div>
+        <div class="contact-value">sakoanalytics@gmail.com</div>
+      </a>
+      <a class="contact-card fade-in" href="https://www.instagram.com/sako_analytics" target="_blank" rel="noopener">
+        <span class="contact-icon">📷</span>
+        <div class="contact-label">Instagram</div>
+        <div class="contact-value">@sako_analytics</div>
+      </a>
+      <a class="contact-card fade-in" href="https://in.linkedin.com/in/sako-analytics-37889b3b7" target="_blank" rel="noopener">
+        <span class="contact-icon li">in</span>
+        <div class="contact-label">LinkedIn</div>
+        <div class="contact-value">Sako Analytics</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="footer-logo"><img src="images/logo.png" alt="Sako Analytics"></div>
+    <div>© <span id="year"></span> Sako Analytics. Premium personal cricket video analysis.</div>
+  </footer>
+
+  <script>
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.querySelector('.faq-q').addEventListener('click', () => {
+        item.classList.toggle('open');
+      });
+    });
+
+    // Year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
